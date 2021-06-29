@@ -1,3 +1,5 @@
+//Original author: CyberDNIWE
+
 /*
 ╔══════════════════════════╗
 ║    Lady Jedi Map order   ║
@@ -15,13 +17,14 @@
 ║     8.    ║  ladyjedi11  ║
 ║     9.    ║  ladyjedi09  ║
 ║     10.   ║  ladyjedi08  ║
-║     11.   ║  ladyjedi12  ║
+║     11.   ║  ladyjedi12  ║ "12"(last part of "ladyjedi12") interpreted as int32 is 12849
 ╚═══════════╩══════════════╝
 */
 
 state("jk2sp")
 {
     string10 level      : "jk2sp.exe", 0x41E888;
+    string2  mapNum     : "jk2sp.exe", 0x41E890; // level + 8, ie last 2 digits of "ladyjediNN"
     string8  shutdown   : "jk2sp.exe", 0x41EF25;
 
     //Little endian conversions, can't just cast float to bool on creation :(
@@ -31,14 +34,14 @@ state("jk2sp")
 
 init
 {
-    print("INITIALIZED LADY JEDI AUTOSPLITTER!");
-    string currentLevel = "";
-    string oldLevel = "";
+    print("INITIALIZED AUTOSPLITTER FOR [LADY JEDI]!");
+    string2 currentLevel = "";
+    string2 oldLevel = "";
 }
 
 startup
 {
-    print("STARTEDUP LADY JEDI AUTOSPLITTER!");
+    print("LOADED AUTOSPLITTER FOR [LADY JEDI]!");
 }
 
 start
@@ -63,35 +66,29 @@ isLoading
 
 split
 {
-    //print("SPLIT CHECK TRIGGERED!");    
-    //print("CharacterControllable: " + Convert.ToBoolean(current.characterIsControllable));
-    //print("CharacterIsAlive: " + Convert.ToBoolean(current.characterIsAlive));
-    
-    bool ret = false;
-
-    // use buffer, for valid values, because level is empty momentarily between loading screens
+    // use buffer, for valid values,
+    // because level string is empty momentarily between loading screens
     if(current.level.Length > 0)
     {
-        vars.currentLevel = current.level;
+        vars.currentLevel = current.mapNum;
     }
     if(old.level.Length > 0)
     {
-        vars.oldLevel = old.level;
+        vars.oldLevel = old.mapNum;
     }
 
     // Check split conditions:
     if(vars.currentLevel != vars.oldLevel)
-    {
+    {        
         print("Triggering SPLIT!");
         return true;
     }
-    
-    
     // Check game ended (Nazar does not reset client level back to default upon exit... dick!)
-    if(vars.currentLevel == "ladyjedi12")
+    else if(vars.currentLevel == "12")
     {
         if(current.shutdown == "shutdown")
         {
+            print("Triggering SPLIT! Run ends!");
             return true;
         }
     }
