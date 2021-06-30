@@ -1,31 +1,42 @@
 //Original author: CyberDNIWE
+/*
+Adresses 
+level (string, part of resource string):    0x41E888;
+levelNumberPart:                            0x41E890;
+shutdown (string, part of console log?):    0x41EF25;
+
+// These just happen to correspond to states that interest us!
+characterIsControllable(float):             0x26CE00;
+characterIsAlive (float):                   0x26CD8C;
+*/
+
 
 /*
-╔══════════════════════════╗
-║    Lady Jedi Map order   ║
-╠═══════════╦══════════════╣
-║  Chapter  ║    Mapname   ║
-╠═══════════╬══════════════╣
-║     0.    ║  ladyjedi01  ║
-║     1.    ║  ladyjedi02  ║
-║     2.    ║  ladyjedi03  ║
-║     3.    ║  ladyjedi05  ║
-║     4.    ║  ladyjedi04  ║
-║     5.    ║  ladyjedi06  ║
-║     6.    ║  ladyjedi07  ║
-║     7.    ║  ladyjedi10  ║
-║     8.    ║  ladyjedi11  ║
-║     9.    ║  ladyjedi09  ║
-║     10.   ║  ladyjedi08  ║
-║     11.   ║  ladyjedi12  ║ "12"(last part of "ladyjedi12") interpreted as int32 is 12849
-╚═══════════╩══════════════╝
+╔═══════════════════════════════════════════════════════╗
+║                   Lady Jedi Map order                 ║
+╠═══════════╦══════════════╦════════════════════════════╣
+║  Chapter  ║    Mapname   ║   Last 2 digits as short   ║
+╠═══════════╬══════════════╬════════════════════════════╣
+║     0.    ║  ladyjedi01  ║            12592           ║
+║     1.    ║  ladyjedi02  ║            12848           ║
+║     2.    ║  ladyjedi03  ║            13104           ║
+║     3.    ║  ladyjedi05  ║            13616           ║
+║     4.    ║  ladyjedi04  ║            13360           ║
+║     5.    ║  ladyjedi06  ║            13872           ║
+║     6.    ║  ladyjedi07  ║            14128           ║
+║     7.    ║  ladyjedi10  ║            12337           ║
+║     8.    ║  ladyjedi11  ║            12593           ║
+║     9.    ║  ladyjedi09  ║            14640           ║
+║     10.   ║  ladyjedi08  ║            14384           ║
+║     11.   ║  ladyjedi12  ║            12849           ║
+╚═══════════╩══════════════╩════════════════════════════╝
+// Too bad ASL does not support #define- like macroses (I hate magic numbers and adresses)
 */
 
 state("jk2sp")
 {
-    string10 level      : "jk2sp.exe", 0x41E888;
-    string2  mapNum     : "jk2sp.exe", 0x41E890; // level + 8, ie last 2 digits of "ladyjediNN"
-    string8  shutdown   : "jk2sp.exe", 0x41EF25;
+    string2   level      : "jk2sp.exe", 0x41E890;
+    string8   shutdown   : "jk2sp.exe", 0x41EF25;
 
     //Little endian conversions, can't just cast float to bool on creation :(
     float characterIsControllable:  "jk2gamex86.dll", 0x26CE00;
@@ -35,8 +46,8 @@ state("jk2sp")
 init
 {
     print("INITIALIZED AUTOSPLITTER FOR [LADY JEDI]!");
-    string2 currentLevel = "";
-    string2 oldLevel = "";
+    string currentLevel = "";
+    string oldLevel = "";
 }
 
 startup
@@ -70,26 +81,36 @@ split
     // because level string is empty momentarily between loading screens
     if(current.level.Length > 0)
     {
-        vars.currentLevel = current.mapNum;
+        vars.currentLevel = current.level;
     }
     if(old.level.Length > 0)
     {
-        vars.oldLevel = old.mapNum;
+        vars.oldLevel = old.level;
     }
 
-    // Check split conditions:
-    if(vars.currentLevel != vars.oldLevel)
-    {        
-        print("Triggering SPLIT!");
-        return true;
-    }
-    // Check game ended (Nazar does not reset client level back to default upon exit... dick!)
-    else if(vars.currentLevel == "12")
+    // Every level exept for last (12) changes to the next (default)
+    switch((string)vars.currentLevel)
     {
-        if(current.shutdown == "shutdown")
+        case "12":
         {
-            print("Triggering SPLIT! Run ends!");
-            return true;
+            // Check game ended (Nazar does not reset client level back to default upon exit... dick!)
+            if(current.shutdown.Contains("down"))
+            {
+                //print("Run ends!");
+                return true;
+            }
+            break;
+        }
+        
+        default:
+        {
+            // Check split conditions:
+            if(vars.currentLevel != vars.oldLevel)
+            {        
+                //print("Triggering SPLIT!");
+                return true;
+            }
+            break;
         }
     }
 }
