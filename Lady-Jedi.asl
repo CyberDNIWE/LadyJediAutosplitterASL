@@ -8,6 +8,7 @@ shutdown (string, part of console log?):    0x41EF25;
 // These just happen to correspond to states that interest us!
 characterIsControllable(float):             0x26CE00;
 characterIsAlive (float):                   0x26CD8C;
+loading (bool):                             0x41D868;
 */
 
 
@@ -35,12 +36,14 @@ characterIsAlive (float):                   0x26CD8C;
 
 state("jk2sp")
 {
-    string2   level      : "jk2sp.exe", 0x41E890;
-    string8   shutdown   : "jk2sp.exe", 0x41EF25;
+    bool        isLoading:  "jk2sp.exe", 0x41D868;
+    string2     level:      "jk2sp.exe", 0x41E890;
+    string8     shutdown:   "jk2sp.exe", 0x41EF25;
 
     //Little endian conversions, can't just cast float to bool on creation :(
     float characterIsControllable:  "jk2gamex86.dll", 0x26CE00;
     float characterIsAlive:         "jk2gamex86.dll", 0x26CD8C;
+    
 }
 
 init
@@ -72,7 +75,7 @@ reset
 // Timer pauses whilst isLoading returns true
 isLoading
 {
-    return !(Convert.ToBoolean(current.characterIsControllable) && Convert.ToBoolean(current.characterIsAlive));
+    return !(Convert.ToBoolean(current.characterIsControllable) && Convert.ToBoolean(current.characterIsAlive) && !current.isLoading);
 }
 
 split
