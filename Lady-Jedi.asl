@@ -3,6 +3,7 @@
 Adresses 
 level (string, part of resource string):    0x41E888;
 levelNumberPart:                            0x41E890;
+characterExists: (float):                   0x4244C0;
 shutdown (string, part of console log?):    0x41EF25;
 
 // These just happen to correspond to states that interest us!
@@ -36,9 +37,9 @@ loading (bool):                             0x41D868;
 
 state("jk2sp")
 {
-    bool        isLoading:  "jk2sp.exe", 0x41D868;
-    string2     level:      "jk2sp.exe", 0x41E890;
-    string8     shutdown:   "jk2sp.exe", 0x41EF25;
+    string2     level:              "jk2sp.exe", 0x41E890;
+    string8     shutdown:           "jk2sp.exe", 0x41EF25;
+    float       characterExists:    "jk2sp.exe", 0x4244C0;
 
     //Little endian conversions, can't just cast float to bool on creation :(
     float characterIsControllable:  "jk2gamex86.dll", 0x26CE00;
@@ -74,8 +75,8 @@ reset
 
 // Timer pauses whilst isLoading returns true
 isLoading
-{
-    return !(Convert.ToBoolean(current.characterIsControllable) && Convert.ToBoolean(current.characterIsAlive) && !current.isLoading);
+{    
+    return !(Convert.ToBoolean(current.characterIsControllable) && Convert.ToBoolean(current.characterIsAlive) && Convert.ToBoolean(current.characterExists));
 }
 
 split
