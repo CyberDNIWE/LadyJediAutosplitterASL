@@ -40,10 +40,10 @@
       <Address>jk2sp.exe+41EF25</Address>
     </CheatEntry>
     <CheatEntry>
-      <ID>25</ID>
-      <Description>"Loading (?)"</Description>
-      <VariableType>Byte</VariableType>
-      <Address>jk2sp.exe+41D868</Address>
+      <ID>36</ID>
+      <Description>"Loading?!"</Description>
+      <VariableType>Float</VariableType>
+      <Address>jk2sp.exe+4244C0</Address>
     </CheatEntry>
   </CheatEntries>
   <UserdefinedSymbols/>
